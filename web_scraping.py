@@ -1,27 +1,52 @@
-#!/usr/bin/env python
-import os
-import sys
-import xmlrpclib
-import ssl
-import random
-from datetime import datetime
-import time
+#!/usr/bin/env python2
 import logging
+import os
+import random
+import ssl
+import sys
+import time
+import xmlrpclib
+import argparse
+from argparse import Namespace
+from datetime import datetime
+
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
-from bs4 import BeautifulSoup
 
 #Log to stdout for containers
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
-# Get configuration from environmental variables
+# Get configuration from environmental variables or command line
+parser = argparse.ArgumentParser(description="Script to poll Odoo for scraping assignments")
+def environ_or_required(key):
+    if os.environ.get(key):
+        return {'default': os.environ.get(key)}
+    else:
+        return {'required': True}
 try:
-    url = os.environ.get("NSA_XMLRPC_URI")
-    login = int(os.environ.get("NSA_USER"))
-    pwd = os.environ.get("NSA_PASSWORD")
-    db = os.environ.get("NSA_DB")
-    poll_interval = int(os.environ.get("NSA_POLL_INTERVAL"))
+    parser.add_argument('-u', '--url', dest='url', default=os.environ.get("NSA_XMLRPC_URI",
+                    'http://localhost:8069'), help="XML-RPC host URL (default http://localhost:8069)")
+    parser.add_argument('-l', '--login', dest='login', default=os.environ.get("NSA_USER",
+                    1), help='user UID as an integer (default 1)', type=int)
+    parser.add_argument('-p', '--password', dest='pwd',  help='the password to login to Odoo (required)',
+                        **environ_or_required("NSA_PASSWORD"))
+
+    parser.add_argument('-d', '--database', dest='db',  help='Odoo database (required)',
+                        **environ_or_required("NSA_DB"))
+
+    parser.add_argument('-i', '--interval', dest="poll_interval", default=os.environ.get("NSA_POLL_INTERVAL",
+                                                                                         120),
+                        type=int, help='interval to poll for work (default 120 sec)')
+
+
+    args = parser.parse_args()  # type: Namespace
+    url = args.url
+    login = args.login
+    pwd = args.pwd
+    db = args.db
+    poll_interval = args.poll_interval
 except Exception as e:
     logging.error(e)
     sys.exit(1)
