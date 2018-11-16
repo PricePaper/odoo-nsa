@@ -15,7 +15,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 # Log to stdout for containers
-FORMAT = "%(asctime)-15s %(user)-8s %(message)s"
+FORMAT = "%(asctime)-15s %(message)s"
 logging.basicConfig(format=FORMAT, stream=sys.stdout, level=logging.INFO)
 
 # Get configuration from environmental variables or command line
