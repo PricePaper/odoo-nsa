@@ -92,26 +92,32 @@ def random_sleep():
 
 
 def restaurant_depot_login(driver, website_config):
-    if 'rdepot' in website_config:
-        login_url = website_config['rdepot'][0]
-        username = website_config['rdepot'][1]
-        password = website_config['rdepot'][2]
+    login = False
+    while not login:
+        try:
+            if 'rdepot' in website_config:
+                login_url = website_config['rdepot'][0]
+                username = website_config['rdepot'][1]
+                password = website_config['rdepot'][2]
 
-        driver.get(login_url)
-        driver.implicitly_wait(30)
+                driver.get(login_url)
+                driver.implicitly_wait(40)
 
-        uname = driver.find_element_by_id('cphMainContent_txtUserName')
-        uname.clear()
-        uname.send_keys(username)
+                uname = driver.find_element_by_id('cphMainContent_txtUserName')
+                uname.clear()
+                uname.send_keys(username)
 
-        pwd = driver.find_element_by_id('cphMainContent_txtPassword')
-        pwd.clear()
-        pwd.send_keys(password)
+                pwd = driver.find_element_by_id('cphMainContent_txtPassword')
+                pwd.clear()
+                pwd.send_keys(password)
 
-        submit_button = driver.find_element_by_id('cphMainContent_btnSubmit')
-        submit_button.click()
-        driver.implicitly_wait(50)
-        return driver
+                submit_button = driver.find_element_by_id('cphMainContent_btnSubmit')
+                submit_button.click()
+                driver.implicitly_wait(60)
+                login = True
+        except Exception as e:
+            pass
+    return driver
 
 
 def restaurant_depot_fetch(driver, item, products, mode):
