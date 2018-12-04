@@ -140,7 +140,10 @@ def restaurant_depot_fetch(driver, item, products, mode):
     name = False
     if name_td:
         name = name_td[0].label.get_text()
-    price_div = soup_level2.findAll('div', {'id': 'ctl00_cphMainContent_resultsGrid_ctl00_ctl04_pnlUnitPrice'})
+    # price_div = soup_level2.findAll('div', {'id': 'ctl00_cphMainContent_resultsGrid_ctl00_ctl04_pnlUnitPrice'})
+    price_div = soup_level2.findAll('div', {'id': 'ctl00_cphMainContent_resultsGrid_ctl00_ctl04_pnlCasePrice'})
+    if not price_div:
+        price_div = soup_level2.findAll('div', {'id': 'ctl00_cphMainContent_resultsGrid_ctl00_ctl04_pnlUnitPrice'})
 
     if price_div:
         unit_price = price_div[0].label.get_text().split()[1][1:]
@@ -346,4 +349,4 @@ while True:
         logging.error('Website configuration required')
         sys.exit(1)
     rdepot_keys, wdepot_keys = check_queued_fetches(login_config)
-    time.sleep(poll_interval) 
+    time.sleep(poll_interval)
