@@ -20,8 +20,8 @@ RUN set -x; \
             python-lxml \
             firefoxdriver \
             firefox \
-            vim-tiny \
+            dumb-init \
         && apt-get -y autoclean \
         && rm -rf /var/lib/apt/lists/*
-#ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/web_scraping.py"]
