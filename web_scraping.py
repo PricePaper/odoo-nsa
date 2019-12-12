@@ -39,7 +39,7 @@ try:
                                                                           'http://localhost:8069'),
                         help="XML-RPC host URL (default http://localhost:8069)")
     parser.add_argument('-l', '--login', dest='login', default=os.environ.get("NSA_USER",
-                                                                              1),
+                                                                              2),
                         help='user UID as an integer (default 1)', type=int)
     parser.add_argument('-p', '--password', dest='pwd', help='the password to login to Odoo (required)',
                         **environ_or_required("NSA_PASSWORD"))
