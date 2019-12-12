@@ -138,21 +138,22 @@ def restaurant_depot_process_page(driver):
         if unit_price:
             unit_price = unit_price.text.strip().strip('$')
         else:
-            unit_price = ele.find('div', {'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {'value': '1'}).text.strip().strip('Unit').strip().strip('$')
-            case_price = ele.find('div', {'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {'value': '2'}).text.strip().strip('Case').strip().strip('$')
-        product = {}
-        for index, li in enumerate(event_title):
-            if index == 0:
-                product['name'] = li.text.strip()
-            elif index == 1:
-                product['item'] = li.text.strip('Item:').strip()
-            elif index == 2:
-                product['upc'] = li.text.strip('UPC:').strip()
-            elif index == 3:
-                product['units_in_case'] = li.text.strip('Units per case:').strip() and float(li.text.strip('Units per case:').strip())
-                product['case_price'] = case_price and float(case_price)
+            unit_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {'value': '1'}).text.strip().strip('Unit').strip().strip('$')
+            case_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {'value': '2'}).text.strip().strip('Case').strip().strip('$')
+        if unit_price:
+            product = {}
+            for index, li in enumerate(event_title):
+                if index == 0:
+                    product['name'] = li.text.strip()
+                elif index == 1:
+                    product['item'] = li.text.strip('Item:').strip()
+                elif index == 2:
+                    product['upc'] = li.text.strip('UPC:').strip()
+                elif index == 3:
+                    product['units_in_case'] = li.text.strip('Units per case:').strip() and float(li.text.strip('Units per case:').strip())
+                    product['case_price'] = case_price and float(case_price)
 
-        product['unit_price'] = unit_price and float(unit_price)
+            product['unit_price'] = unit_price and float(unit_price)
 
         scraped_data.append(product)
 
@@ -221,7 +222,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
         search_box = driver.find_element_by_id('searchval')
         search_box.clear()
         search_box.send_keys(item)
-        search_button = driver.find_element_by_xpath("//input[@class='btn btn-info banner-search-btn']")
+        search_button = driver.find_element_by_xpath("//button[@class='btn btn-info banner-search-btn']")
         search_button.click()
 
     if mode == 'url':
