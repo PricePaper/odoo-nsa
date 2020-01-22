@@ -131,31 +131,34 @@ def restaurant_depot_process_page(driver):
     soup_string = BeautifulSoup(driver.page_source, 'lxml')
 
     for ele in soup_string.findAll('div', {'id': 'items-list'})[0].findAll('ol', {'class': 'products list items product-items'})[0].findAll('li', {'class': 'item product product-item'}):
-        event_title = ele.find(class_='col-md-12 data-col').findAll('li')
-        unit_price = ele.find('span', {'class': 'select-price'}) or False
-        case_price = ''
+        try:
+            event_title = ele.find(class_='col-md-12 data-col').findAll('li')
+            unit_price = ele.find('span', {'class': 'select-price'}) or False
+            case_price = ''
 
-        if unit_price:
-            unit_price = unit_price.text.strip().strip('$')
-        else:
-            unit_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {'value': '1'}).text.strip().strip('Unit').strip().strip('$')
-            case_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {'value': '2'}).text.strip().strip('Case').strip().strip('$')
-        if unit_price:
-            product = {}
-            for index, li in enumerate(event_title):
-                if index == 0:
-                    product['name'] = li.text.strip()
-                elif index == 1:
-                    product['item'] = li.text.strip('Item:').strip()
-                elif index == 2:
-                    product['upc'] = li.text.strip('UPC:').strip()
-                elif index == 3:
-                    product['units_in_case'] = li.text.strip('Units per case:').strip() and float(li.text.strip('Units per case:').strip())
-                    product['case_price'] = case_price and float(case_price)
+            if unit_price:
+                unit_price = unit_price.text.strip().strip('$')
+            else:
+                unit_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {'value': '1'}).text.strip().strip('Unit').strip().strip('$')
+                case_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {'value': '2'}).text.strip().strip('Case').strip().strip('$')
+            if unit_price:
+                product = {}
+                for index, li in enumerate(event_title):
+                    if index == 0:
+                        product['name'] = li.text.strip()
+                    elif index == 1:
+                        product['item'] = li.text.strip('Item:').strip()
+                    elif index == 2:
+                        product['upc'] = li.text.strip('UPC:').strip()
+                    elif index == 3:
+                        product['units_in_case'] = li.text.strip('Units per case:').strip() and float(li.text.strip('Units per case:').strip())
+                        product['case_price'] = case_price and float(case_price)
 
-            product['unit_price'] = unit_price and float(unit_price)
+                product['unit_price'] = unit_price and float(unit_price)
 
-        scraped_data.append(product)
+            scraped_data.append(product)
+        except Exception er:
+            logging.error('Exception occured', er)
 
     return scraped_data
 
@@ -172,7 +175,10 @@ def restaurant_depot_scrape(driver):
     time.sleep(10)
 
     while True:
-        data += restaurant_depot_process_page(driver)
+        try:
+            data += restaurant_depot_process_page(driver)
+        except Exception as er:
+            logging.error('One page Skipped\n Error:', er)
         try:
             end_page = driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[5]/div/div/div[3]/div/div[@class='item pages-item-next inactive']")
         except NoSuchElementException:
@@ -333,10 +339,16 @@ def check_queued_fetches(login_config):
                        rdepot_skus}
     wdepot_products = {sku['competitor_sku']: (sku['id'], sku['qty_in_uom'], sku['website_link']) for sku in
                        wdepot_skus}
+    logging.info('***Webstaurant Scraping***')
     if wdepot_products:
         webstaurant_store(wdepot_products, login_config)
+    else:
+        logging.info('No webstaurant product in the queue')
+    logging.info('***Restaurant Scraping***')
     if rdepot_products:
         restaurant_depot(rdepot_products, login_config)
+    else:
+        logging.info('No Restaurant depot product in the queue')
     return rdepot_products.keys(), wdepot_products.keys()
 
 
