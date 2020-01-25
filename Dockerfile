@@ -4,10 +4,6 @@ LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 # Generate locale 
 ENV LANG en_US.utf8
 
-# Copy base script
-COPY web_scraping.py geckodriver /
-RUN set -x; chmod +x /web_scraping.py ./geckodriver
-
 # Install some deps and wkhtmltopdf
 RUN set -x; \
         apt-get update \
@@ -23,5 +19,10 @@ RUN set -x; \
             dumb-init \
         && apt-get -y autoclean \
         && rm -rf /var/lib/apt/lists/*
+
+# Copy base script
+COPY web_scraping.py geckodriver /
+RUN set -x; chmod +x /web_scraping.py ./geckodriver
+
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/web_scraping.py"]
