@@ -157,7 +157,7 @@ def restaurant_depot_process_page(driver):
                 product['unit_price'] = unit_price and float(unit_price)
 
             scraped_data.append(product)
-        except Exception er:
+        except Exception as er:
             logging.error('Exception occured', er)
 
     return scraped_data
