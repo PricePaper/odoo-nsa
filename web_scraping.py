@@ -155,8 +155,7 @@ def restaurant_depot_process_page(driver):
                         product['case_price'] = case_price and float(case_price)
 
                 product['unit_price'] = unit_price and float(unit_price)
-
-            scraped_data.append(product)
+                scraped_data.append(product)
         except Exception as er:
             logging.error('Exception occured', er)
 
@@ -166,13 +165,29 @@ def restaurant_depot_process_page(driver):
 
 def restaurant_depot_scrape(driver):
     data = []
-    my_list = driver.find_element_by_xpath("//button[@class='action action-auth-toggle user-shopping-list']")
-    my_list.click()
-    link = driver.find_element_by_xpath("//div[@id='header-list-item-count']/div/ol[1]/li[1]/a")   # use li[1] for first list
-    link.click()
-    time.sleep(10)
-    Select(driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[5]/div/div/div[2]/div/div/select[@id='limiter']")).select_by_value('100')
-    time.sleep(10)
+    page = False
+    sleep_time = 20
+    count = 1
+    driver1 = driver
+    while not page:
+        try:
+            my_list = driver.find_element_by_xpath("//button[@class='action action-auth-toggle user-shopping-list']")
+            my_list.click()
+            link = driver.find_element_by_xpath("//div[@id='header-list-item-count']/div/ol[1]/li[1]/a")   # use li[1] for first list
+            link.click()
+            time.sleep(sleep_time)
+            Select(driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[5]/div/div/div[2]/div/div/select[@id='limiter']")).select_by_value('100')
+            time.sleep(sleep_time)
+            page = True
+        except Exception as er:
+            if count==3:
+                logging.error("***Restaurant depot Page loading failed.***")
+                return data
+            logging.error("restaurant depot Page loading failed. Retrying...")
+            sleep_time+=10
+            count+=1
+            driver = driver1
+
 
     while True:
         try:
