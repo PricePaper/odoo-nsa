@@ -176,7 +176,7 @@ def restaurant_depot_scrape(driver):
             link = driver.find_element_by_xpath("//div[@id='header-list-item-count']/div/ol[1]/li[1]/a")   # use li[1] for first list
             link.click()
             time.sleep(sleep_time)
-            Select(driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[5]/div/div/div[2]/div/div/select[@id='limiter']")).select_by_value('100')
+            Select(driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[6]/div/div/div[2]/div/div/select[@id='limiter']")).select_by_value('100')
             time.sleep(sleep_time)
             page = True
         except Exception as er:
@@ -195,14 +195,18 @@ def restaurant_depot_scrape(driver):
         except Exception as er:
             logging.error('One page Skipped\n Error:', er)
         try:
-            end_page = driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[5]/div/div/div[3]/div/div[@class='item pages-item-next inactive']")
+            end_page = driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[6]/div/div/div[3]/div/div[@class='item pages-item-next inactive']")
         except NoSuchElementException:
             end_page = False
         if end_page:
             break
         else:
-            driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[5]/div/div/div[3]/div/div[3]/a[@class='action  next']").click()
-            time.sleep(20)
+            try:
+                driver.find_element_by_xpath("/html/body/div[1]/main/div[2]/div[1]/div[2]/div[6]/div/div/div[3]/div/div[3]/a[@class='action  next']").click()
+                time.sleep(20)
+            except NoSuchElementException:
+                logging.error('Element not Found')
+                break
     driver.quit()
     return data
 
@@ -216,11 +220,13 @@ def restaurant_depot(products, website_config):
     if 'rdepot' in website_config:
         for sku in products.keys():
             if sku in data.keys(): #product found in the scraped list
-
-                logging.info("writing info sku:%s  Price:%s" % (sku, data[sku].get('unit_price')))
+                item_price =  data[sku].get('unit_price')
+                if data[sku].get('case_price'):
+                    item_price =  data[sku].get('case_price')
+                logging.info("writing info sku:%s  Price:%s" % (sku, item_price))
                 create_vals = {'product_sku_ref_id': products[sku][0],
                                'item_name': data[sku].get('name'),
-                               'item_price': data[sku].get('unit_price'),
+                               'item_price': item_price,
                                'update_date': str(datetime.now()),
                                }
                 res = odoo_writeback(create_vals, products[sku][0])
@@ -243,8 +249,9 @@ def webstaurant_store_fetch(driver, item, products, mode):
         search_box = driver.find_element_by_id('searchval')
         search_box.clear()
         search_box.send_keys(item)
-        search_button = driver.find_element_by_xpath("//button[@class='btn btn-info banner-search-btn']")
+        search_button = driver.find_element_by_xpath("//button[@class='bg-origin-box-border bg-repeat-x border-solid border box-border cursor-pointer inline-block font-semibold text-center no-underline hover:no-underline antialiased align-middle hover:bg-position-y-15 rounded-l-none rounded-r-normal box-border text-base-1/2 leading-4 m-0 py-2 px-2 capitalize align-top w-24 z-20 xs:py-3 xs:px-5 xs:w-auto  bg-blue-300 hover:bg-blue-600 text-white text-shadow-black-60 bg-linear-gradient-180-blue border-black-25 shadow-inset-black-17']")
         search_button.click()
+
 
     if mode == 'url':
         driver.get(products[item][2])
