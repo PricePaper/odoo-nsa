@@ -15,9 +15,9 @@ RUN set -x; \
         && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
         && apt-get -y upgrade \
         && apt-get install -y --no-install-recommends \
-            python-selenium \
-            python-bs4 \
-            python-lxml \
+            python3-selenium \
+            python3-bs4 \
+            python3-lxml \
             firefoxdriver \
             firefox \
             dumb-init \

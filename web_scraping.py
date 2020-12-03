@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import argparse
 import logging
 import os
@@ -6,7 +6,7 @@ import random
 import ssl
 import sys
 import time
-import xmlrpclib
+import xmlrpc.client
 from argparse import Namespace
 from datetime import datetime
 
@@ -65,7 +65,7 @@ options = Options()
 options.add_argument("--headless")  # declare the browser to run in headless mode
 
 # Socket Connection Configuration
-socket = xmlrpclib.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context())
+socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context())
 
 
 def odoo_writeback(create_vals, product_id, write_url=''):
@@ -337,7 +337,7 @@ def check_queued_fetches(login_config):
         webstaurant_store(wdepot_products, login_config)
     if rdepot_products:
         restaurant_depot(rdepot_products, login_config)
-    return rdepot_products.keys(), wdepot_products.keys()
+    return list(rdepot_products.keys()), list(wdepot_products.keys())
 
 
 while True:
