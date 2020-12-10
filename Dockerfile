@@ -1,12 +1,8 @@
-FROM ubuntu:focal
+FROM ubuntu:focal AS base
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 # Generate locale 
 ENV LANG en_US.utf8
-
-# Copy base script
-COPY web_scraping.py geckodriver /
-RUN set -x; chmod +x /web_scraping.py ./geckodriver
 
 # Install some deps and wkhtmltopdf
 RUN set -x; \
@@ -23,5 +19,10 @@ RUN set -x; \
         && pip3 install --no-cache beautifulsoup4 selenium \
         && apt-get -y autoclean \
         && rm -rf /var/lib/apt/lists/*
+
+FROM base AS final
+# Copy base script
+COPY web_scraping.py /
+
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/web_scraping.py"]
