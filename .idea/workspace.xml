@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4d359f74-ea42-48f6-857d-399f117c7d52" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web_scraping.py" beforeDir="false" afterPath="$PROJECT_DIR$/web_scraping.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="JupyterTrust" id="c107e9eb-fa5b-4e23-b82e-c6b37c88fcb3" />
+  <component name="KubernetesApiPersistence">
+    <option name="context" value="do-nyc3-k8s-1" />
+    <option name="namespace" value="odoo-dev-2" />
+  </component>
+  <component name="ProjectId" id="1lRKddukf7kBkJOEGxhPbMRIPpZ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="RunManager" selected="Docker.Build odoo-nsa">
+    <configuration name="Build odoo-nsa" type="docker-deploy" factoryName="dockerfile" server-name="Local Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="imageTag" value="odoo-nsa" />
+          <option name="buildCliOptions" value="--target=final" />
+          <option name="buildOnly" value="true" />
+          <option name="command" value="" />
+          <option name="containerName" value="" />
+          <option name="entrypoint" value="" />
+          <option name="commandLineOptions" value="" />
+          <option name="sourceFilePath" value="Dockerfile" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="Run odoo-nsa" type="docker-deploy" factoryName="docker-image" server-name="Local Docker">
+      <deployment type="docker-image">
+        <settings>
+          <option name="imageTag" value="odoo-nsa" />
+          <option name="command" value="" />
+          <option name="containerName" value="nsa" />
+          <option name="entrypoint" value="" />
+          <option name="envVars">
+            <list>
+              <DockerEnvVarImpl>
+                <option name="name" value="NSA_XMLRPC_URI" />
+                <option name="value" value="&quot;https://ean.pricepaper.com&quot;" />
+              </DockerEnvVarImpl>
+              <DockerEnvVarImpl>
+                <option name="name" value="NSA_USER" />
+                <option name="value" value="2" />
+              </DockerEnvVarImpl>
+              <DockerEnvVarImpl>
+                <option name="name" value="NSA_PASSWORD" />
+                <option name="value" value="&quot;confianzpricepaper&quot;" />
+              </DockerEnvVarImpl>
+              <DockerEnvVarImpl>
+                <option name="name" value="NSA_DB" />
+                <option name="value" value="ppt_20201130" />
+              </DockerEnvVarImpl>
+            </list>
+          </option>
+          <option name="commandLineOptions" value="" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Docker.Run odoo-nsa" />
+      <item itemvalue="Docker.Build odoo-nsa" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4d359f74-ea42-48f6-857d-399f117c7d52" name="Default Changelist" comment="" />
+      <created>1607554552101</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1607554552101</updated>
+      <workItem from="1607554553156" duration="2265000" />
+      <workItem from="1607561359801" duration="203000" />
+      <workItem from="1607561838166" duration="411000" />
+      <workItem from="1607562327874" duration="1631000" />
+      <workItem from="1607563979432" duration="73000" />
+      <workItem from="1607564084754" duration="2174000" />
+      <workItem from="1607569015285" duration="3554000" />
+    </task>
+    <task id="LOCAL-00001" summary="Split docker build process to speed up development&#10;Migrated from Ubuntu to Alpine for container&#10;Minor formating improvements">
+      <created>1607569515971</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1607569515971</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Split build process to speed up development" />
+    <MESSAGE value="Split docker build process to speed up development&#10;Migrated from Ubuntu to Alpine for container&#10;Minor formating improvements" />
+    <option name="LAST_COMMIT_MESSAGE" value="Split docker build process to speed up development&#10;Migrated from Ubuntu to Alpine for container&#10;Minor formating improvements" />
+  </component>
+</project>

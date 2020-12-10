@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import logging
+import multiprocessing as mp
 import os
 import random
 import ssl
@@ -8,16 +9,28 @@ import sys
 import time
 import xmlrpc.client
 from argparse import Namespace
-from bs4 import BeautifulSoup
 from datetime import datetime
+
+import multiprocessing_logging
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.ui import Select
 
-# Log to stdout for containers
-FORMAT = "%(asctime)-15s %(message)s"
-logging.basicConfig(format=FORMAT, stream=sys.stdout, level=logging.INFO)
+# Set up logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+# create file handler which logs even debug messages
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(processName)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+# add the handlers to logger
+logger.addHandler(ch)
+multiprocessing_logging.install_mp_handler(logger=logger)
 
 # Get configuration from environmental variables or command line
 parser = argparse.ArgumentParser(description="Script to poll Odoo for scraping assignments")
@@ -55,7 +68,7 @@ try:
     db = args.db
     poll_interval = args.poll_interval
 except Exception as e:
-    logging.error(e)
+    logger.error(e)
     sys.exit(1)
 
 # Browser Configuration
@@ -85,7 +98,7 @@ def random_sleep():
     ran_int = random.randint(0, 1)
     if ran_int == 1:
         nap_time = random.randint(4, 10)
-        logging.info("sleeping for %s seconds." % (nap_time))
+        logger.info("sleeping for %s seconds." % (nap_time))
         time.sleep(nap_time)
 
 
@@ -115,7 +128,7 @@ def restaurant_depot_login(driver, website_config):
 
                 login = True
         except Exception as e:
-            logging.error("restaurant depot logging in failed. Retrying...")
+            logger.error("Restaurant Depot login in failed. Retrying...")
             pass
     return driver
 
@@ -158,9 +171,9 @@ def restaurant_depot_process_page(driver):
                     product['unit_price'] = unit_price and float(unit_price)
                     scraped_data.append(product)
             except Exception as er:
-                logging.error('Exception occurred', er)
+                logger.error('Exception occurred', er)
     except Exception as er:
-        logging.error('Exception occurred', er)
+        logger.error('Exception occurred', er)
     return scraped_data
 
 
@@ -185,9 +198,9 @@ def restaurant_depot_scrape(driver):
             page = True
         except Exception as er:
             if count == 3:
-                logging.error("***Restaurant depot Page loading failed.***")
+                logger.error("***Restaurant Depot Page loading failed.***")
                 return data
-            logging.error("restaurant depot Page loading failed. Retrying...")
+            logger.error("Restaurant Depot Page loading failed. Retrying...")
             sleep_time += 10
             count += 1
             driver = driver1
@@ -196,7 +209,7 @@ def restaurant_depot_scrape(driver):
         try:
             data += restaurant_depot_process_page(driver)
         except Exception as er:
-            logging.error('One page Skipped\n Error:', er)
+            logger.error('One page Skipped\n Error:', er)
         try:
             end_page = driver.find_element_by_xpath(
                 "/html/body/div[1]/main/div[2]/div[1]/div[2]/div[6]/div/div/div[3]/div/div[@class='item pages-item-next inactive']")
@@ -210,7 +223,7 @@ def restaurant_depot_scrape(driver):
                     "/html/body/div[1]/main/div[2]/div[1]/div[2]/div[6]/div/div/div[3]/div/div[3]/a[@class='action  next']").click()
                 time.sleep(20)
             except NoSuchElementException:
-                logging.error('Element not Found')
+                logger.error('Element not Found')
                 break
     driver.quit()
     return data
@@ -228,7 +241,7 @@ def restaurant_depot(products, website_config):
                 item_price = data[sku].get('unit_price')
                 if data[sku].get('case_price'):
                     item_price = data[sku].get('case_price')
-                logging.info("writing info sku:%s  Price:%s" % (sku, item_price))
+                logger.info(f"writing info RD sku: {sku}  Price: {item_price}")
                 create_vals = {'product_sku_ref_id': products[sku][0],
                                'item_name': data[sku].get('name'),
                                'item_price': item_price,
@@ -287,13 +300,13 @@ def webstaurant_store_fetch(driver, item, products, mode):
                 unit_price = price_span[0].get_text()
 
         if unit_price:
-            logging.info("writing info sku:%s  Price:%s" % (item, unit_price))
+            logger.info(f"writing info WS sku: {item}  Price: {unit_price}")
             create_vals = {'product_sku_ref_id': product_sku_id, 'item_name': name, 'item_price': unit_price,
                            'update_date': str(datetime.now())}
             res = odoo_writeback(create_vals, product_sku_id, write_url=item_url)
             return True
     except Exception as er:
-        logging.error('Exception occurred', er)
+        logger.error('Exception occurred', er)
     return False
 
 
@@ -310,7 +323,7 @@ def webstaurant_store(products, website_config):
             try:
                 res = webstaurant_store_fetch(driver, item, products, 'search')
                 if not res and products[item][2]:
-                    logging.info("could not find product in search. Redo the failed SKU with URL")
+                    logger.info("Could not find Webstaurant product in search. Redo the failed SKU with URL")
                     res = webstaurant_store_fetch(driver, item, products, 'url')
                 random_sleep()
 
@@ -319,18 +332,18 @@ def webstaurant_store(products, website_config):
                 # if exception due to timeout, then recreate driver and repeat
                 #                driver.close()
                 driver.quit()
-                logging.info("Closed Driver, Quit driver, Spawning new driver instance.................")
+                logger.info("Closed Driver, Quit driver, Spawning new driver instance.................")
                 driver = webdriver.Firefox(options)
                 driver.get(login_url)
                 driver.implicitly_wait(random.randint(40, 45))
                 try:
                     res = webstaurant_store_fetch(driver, item, products, 'search')
                     if not res and products[item][2]:
-                        logging.info("could not find product in search. Redo the failed SKU with URL")
+                        logger.info("Could not find Webstaurant product in search. Redo the failed SKU with URL")
                         res = webstaurant_store_fetch(driver, item, products, 'url')
                     random_sleep()
                 except Exception as er:
-                    logging.error('Exception occurred for %s: %s' % (item, er))
+                    logger.error('Exception occurred for %s: %s' % (item, er))
                     write_except = socket.execute(db, login, pwd, 'product.sku.reference', 'log_exception_error',
                                                   products[item][0], str(er))
 
@@ -347,16 +360,16 @@ def webstaurant_store(products, website_config):
 
 
     else:
-        logging.error('Website Configuration required for Websturant Store')
+        logger.error('Website Configuration required for Webstaurant Store')
     try:
         #        driver.close()
         driver.quit()
     except:
-        logging.error('Cannot close driver. Exiting...')
+        logger.error('Cannot close driver. Exiting...')
 
 
 def check_queued_fetches(login_config):
-    logging.info('polling queue')
+    logger.info('polling queue')
     queued_fetches = socket.execute(db, login, pwd, 'price.fetch.schedule', 'search_read', [],
                                     ['id', 'product_sku_ref_id'])
     queued_fetches_ids = [ele['id'] for ele in queued_fetches]
@@ -371,16 +384,31 @@ def check_queued_fetches(login_config):
                        rdepot_skus}
     wdepot_products = {sku['competitor_sku']: (sku['id'], sku['qty_in_uom'], sku['website_link']) for sku in
                        wdepot_skus}
-    logging.info('***Webstaurant Scraping***')
+
+    # Start Webstaurant Scraping if we have products in the queue
+    logger.info('***Webstaurant Scraping***')
+    webstaurant_worker = None
     if wdepot_products:
-        webstaurant_store(wdepot_products, login_config)
+        webstaurant_worker = mp.Process(name="Webstaurant", target=webstaurant_store,
+                                        args=(wdepot_products, login_config))
+        webstaurant_worker.start()
     else:
-        logging.info('No webstaurant product in the queue')
-    logging.info('***Restaurant Scraping***')
+        logger.info('No Webstaurant product in the queue')
+
+    logger.info('***Restaurant Depot Scraping***')
+    restaurant_depot_worker = None
     if rdepot_products:
-        restaurant_depot(rdepot_products, login_config)
+        restaurant_depot_worker = mp.Process(name="Restaurant_Depot", target=restaurant_depot,
+                                             args=(rdepot_products, login_config))
+        restaurant_depot_worker.start()
     else:
-        logging.info('No Restaurant depot product in the queue')
+        logger.info('No Restaurant Depot product in the queue')
+
+    # Wait for workers to finish their jobs    
+    if webstaurant_worker:
+        webstaurant_worker.join()
+    if restaurant_depot_worker:
+        restaurant_depot_worker.join()
     return list(rdepot_products.keys()), list(wdepot_products.keys())
 
 
@@ -390,7 +418,7 @@ while True:
     login_config = {config['competitor']: (config['home_page_url'], config['username'], config['password']) for config
                     in website_config}
     if not login_config:
-        logging.error('Website configuration required')
+        logger.error('Website configuration required')
         sys.exit(1)
     rdepot_keys, wdepot_keys = check_queued_fetches(login_config)
     time.sleep(poll_interval)

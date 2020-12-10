@@ -15,7 +15,8 @@ RUN set -x; \
             py3-pip \
             firefox \
             dumb-init \
-        && pip3 install --no-cache beautifulsoup4 selenium
+        && pip3 install --no-cache beautifulsoup4 selenium \
+              multiprocessing_logging
 
 FROM base AS final
 # Copy base script
