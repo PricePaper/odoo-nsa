@@ -84,6 +84,7 @@ def odoo_writeback(create_vals, product_id, write_url=''):
     The common method which is used to
     write values back into the odoo instance
     """
+    socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     if write_url:
         write_status = socket.execute(db, login, pwd, 'product.sku.reference', 'write', product_id,
                                       {'website_link': write_url})
@@ -230,7 +231,7 @@ def restaurant_depot_scrape(driver):
 
 
 def restaurant_depot(products, website_config):
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(options=options, service_log_path=os.path.devnull)
     driver = restaurant_depot_login(driver, website_config)
     data = restaurant_depot_scrape(driver)
     data = {elm.get('upc'): {e: elm[e] for e in list(elm.keys()) if e != 'upc'} for elm in data}
@@ -311,7 +312,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
 
 
 def webstaurant_store(products, website_config):
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(options=options, service_log_path=os.path.devnull)
     item_url = ''
     if 'wdepot' in website_config:
         login_url = website_config['wdepot'][0]
@@ -333,7 +334,7 @@ def webstaurant_store(products, website_config):
                 #                driver.close()
                 driver.quit()
                 logger.info("Closed Driver, Quit driver, Spawning new driver instance.................")
-                driver = webdriver.Firefox(options)
+                driver = webdriver.Firefox(options, service_log_path=os.path.devnull)
                 driver.get(login_url)
                 driver.implicitly_wait(random.randint(40, 45))
                 try:

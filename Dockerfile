@@ -8,7 +8,8 @@ COPY geckodriver /usr/local/bin
 
 # Install some deps and wkhtmltopdf
 RUN set -x; \
-        apk update \
+        adduser -D -u 29750 scrape \
+        && apk update \
         && apk upgrade \
         && apk add \
             py3-lxml \
@@ -22,5 +23,6 @@ FROM base AS final
 # Copy base script
 COPY web_scraping.py /
 
+USER scrape
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/web_scraping.py"]
