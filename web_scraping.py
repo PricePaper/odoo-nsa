@@ -239,12 +239,13 @@ def restaurant_depot(products, website_config):
     if 'rdepot' in website_config:
         for sku in list(products.keys()):
             if sku in list(data.keys()):  # product found in the scraped list
+                item_name = data[sku].get('name')
                 item_price = data[sku].get('unit_price')
                 if data[sku].get('case_price'):
                     item_price = data[sku].get('case_price')
-                logger.info(f"writing info RD sku: {sku}  Price: {item_price}")
+                logger.info(f"writing info RD sku: {sku} Name:{item_name} Price: {item_price}")
                 create_vals = {'product_sku_ref_id': products[sku][0],
-                               'item_name': data[sku].get('name'),
+                               'item_name': item_name,
                                'item_price': item_price,
                                'update_date': str(datetime.now()),
                                }
