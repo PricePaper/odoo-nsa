@@ -192,9 +192,11 @@ def restaurant_depot_scrape(driver):
                 "//div[@id='header-list-item-count']/div/ol[1]/li[1]/a")  # use li[1] for first list
             link.click()
             time.sleep(sleep_time)
-            Select(driver.find_element_by_xpath(
-                "/html/body/div[1]/main/div[2]/div[1]/div[2]/div[6]/div/div/div[2]/div/div/select[@id='limiter']")).select_by_value(
-                '100')
+            pop_button = driver.find_elements_by_xpath("//button[@class='action-primary action-accept']")
+            if len(pop_button) > 0:
+                pop_button[1].click()
+                time.sleep(sleep_time)
+            Select(driver.find_element_by_xpath("//select[@id='limiter']")).select_by_value('100')
             time.sleep(sleep_time)
             page = True
         except Exception as er:
@@ -213,7 +215,7 @@ def restaurant_depot_scrape(driver):
             logger.error('One page Skipped\n Error:', er)
         try:
             end_page = driver.find_element_by_xpath(
-                "/html/body/div[1]/main/div[2]/div[1]/div[2]/div[6]/div/div/div[3]/div/div[@class='item pages-item-next inactive']")
+                "//div[@class='item pages-item-next inactive']")
         except NoSuchElementException:
             end_page = False
         if end_page:
@@ -221,7 +223,7 @@ def restaurant_depot_scrape(driver):
         else:
             try:
                 driver.find_element_by_xpath(
-                    "/html/body/div[1]/main/div[2]/div[1]/div[2]/div[6]/div/div/div[3]/div/div[3]/a[@class='action  next']").click()
+                    "//div[@class='item pages-item-next ']/a[@class='action  next']").click()
                 time.sleep(20)
             except NoSuchElementException:
                 logger.error('Element not Found')
@@ -406,7 +408,7 @@ def check_queued_fetches(login_config):
     else:
         logger.info('No Restaurant Depot product in the queue')
 
-    # Wait for workers to finish their jobs    
+    # Wait for workers to finish their jobs
     if webstaurant_worker:
         webstaurant_worker.join()
     if restaurant_depot_worker:
