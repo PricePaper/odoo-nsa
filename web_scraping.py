@@ -275,7 +275,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
             search_box.clear()
             search_box.send_keys(item)
             search_button = driver.find_element_by_xpath(
-                    "//button[@class='bg-origin-box-border bg-repeat-x border-solid border box-border cursor-pointer inline-block font-semibold text-center no-underline hover:no-underline antialiased hover:bg-position-y-15 rounded-l-none rounded-r-normal box-border text-base-1/2 leading-4 m-0 py-2 px-2 capitalize align-top w-24 z-10 xs:py-3 xs:px-5 xs:w-auto  bg-blue-300 hover:bg-blue-600 text-white text-shadow-black-60 bg-linear-gradient-180-blue border-black-25 shadow-inset-black-17 align-middle']")
+                    "//button[@class='bg-origin-box-border bg-repeat-x border-solid border box-border cursor-pointer inline-block text-center no-underline hover:no-underline antialiased hover:bg-position-y-15 rounded-l-none rounded-r-normal box-border text-base-1/2 leading-4 m-0 py-2 px-2 capitalize align-top w-24 z-10 xs:py-3 xs:px-5 xs:w-auto  bg-blue-300 hover:bg-blue-600 text-white text-shadow-black-60 bg-linear-gradient-180-blue border-black-25 shadow-inset-black-17 align-middle font-semibold']")
             search_button.click()
 
         if mode == 'url':
@@ -288,7 +288,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
 
         price_tr = soup_level2.findAll('div', {'class': 'pricing'})[0].findAll('tr')
         price = []
-        name_tag = soup_level2.findAll('h1', {'itemprop': 'Name'})
+        name_tag = soup_level2.findAll('h1', {'id': 'page-header-description'})
         name = False
         if name_tag:
             name = name_tag[0].get_text()
@@ -299,9 +299,9 @@ def webstaurant_store_fetch(driver, item, products, mode):
         if price:
             unit_price = max(price)
         else:
-            price_span = soup_level2.findAll('span', {'itemprop': 'price'})
-            if price_span:
-                unit_price = price_span[0].get_text()
+            price_p = soup_level2.findAll('div', {'class': 'pricing'})[0].findAll('p')
+            if price_p:
+                unit_price = float(price_p[0].get_text().replace('$', '').split('/')[0])
 
         if unit_price:
             logger.info(f"writing info WS sku: {item}  Price: {unit_price}")
