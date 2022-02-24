@@ -76,6 +76,7 @@ options = Options()
 options.headless = True
 
 # Socket Connection Configuration
+
 socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
 
 
@@ -145,7 +146,6 @@ def restaurant_depot_process_page(driver):
                 event_title = ele.find(class_='col-md-12 data-col').findAll('li')
                 unit_price = ele.find('span', {'class': 'select-price'}) or False
                 case_price = ''
-
                 if unit_price:
                     unit_price = unit_price.text.strip().strip('$')
                 else:
@@ -155,22 +155,26 @@ def restaurant_depot_process_page(driver):
                     case_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {
                         'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {
                         'value': '2'}).text.strip().strip('Case').strip().strip('$')
-                if unit_price:
-                    product = {}
-                    for index, li in enumerate(event_title):
-                        if index == 0:
-                            product['name'] = li.text.strip()
-                        elif index == 1:
-                            product['item'] = li.text.strip('Item:').strip()
-                        elif index == 2:
-                            product['upc'] = li.text.strip('UPC:').strip()
-                        elif index == 3:
-                            product['units_in_case'] = li.text.strip('Units per case:').strip() and float(
-                                li.text.strip('Units per case:').strip())
-                            product['case_price'] = case_price and float(case_price)
+                product = {}
+                for index, li in enumerate(event_title):
+                    if index == 0:
+                        product['name'] = li.text.strip()
+                    elif index == 1:
+                        product['item'] = li.text.strip('Item:').strip()
+                    elif index == 2:
+                        product['upc'] = li.text.strip('UPC:').strip()
+                    elif index == 3:
+                        product['units_in_case'] = li.text.strip('Units per case:').strip() and float(
+                            li.text.strip('Units per case:').strip())
 
-                    product['unit_price'] = unit_price and float(unit_price)
-                    scraped_data.append(product)
+
+                product['unit_price'] = unit_price and float(unit_price)
+                product['case_price'] = case_price and float(case_price)
+                product['not_available'] =  False
+                if not unit_price and not case_price:
+                    product['not_available'] =  True
+
+                scraped_data.append(product)
             except Exception as er:
                 logger.error('Exception occurred', er)
     except Exception as er:
@@ -194,7 +198,7 @@ def restaurant_depot_scrape(driver):
             time.sleep(sleep_time)
             pop_button = driver.find_elements_by_xpath("//button[@class='action-primary action-accept']")
             if len(pop_button) > 0:
-                pop_button[1].click()
+                pop_button[0].click()
                 time.sleep(sleep_time)
             Select(driver.find_element_by_xpath("//select[@id='limiter']")).select_by_value('100')
             time.sleep(sleep_time)
@@ -241,6 +245,11 @@ def restaurant_depot(products, website_config):
     if 'rdepot' in website_config:
         for sku in list(products.keys()):
             if sku in list(data.keys()):  # product found in the scraped list
+                if data[sku].get('not_available', False):
+                    write_except = socket.execute(db, login, pwd, 'product.sku.reference', 'log_exception_error',
+                                                  products[sku][0],
+                                                  "Couldn't fetch price due to Product Temporarily unavailable")
+                    continue
                 item_name = data[sku].get('name')
                 item_price = data[sku].get('unit_price')
                 if data[sku].get('case_price'):
