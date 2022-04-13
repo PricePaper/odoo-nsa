@@ -258,7 +258,7 @@ def restaurant_depot(products, website_config):
                 create_vals = {'product_sku_ref_id': products[sku][0],
                                'item_name': item_name,
                                'item_price': item_price,
-                               'update_date': str(datetime.now()),
+                               'update_date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                }
                 res = odoo_writeback(create_vals, products[sku][0])
 
@@ -315,7 +315,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
         if unit_price:
             logger.info(f"writing info WS sku: {item}  Price: {unit_price}")
             create_vals = {'product_sku_ref_id': product_sku_id, 'item_name': name, 'item_price': unit_price,
-                           'update_date': str(datetime.now())}
+                           'update_date': datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
             res = odoo_writeback(create_vals, product_sku_id, write_url=item_url)
             return True
     except Exception as er:
