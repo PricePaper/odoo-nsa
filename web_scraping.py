@@ -200,7 +200,7 @@ def restaurant_depot_scrape(driver):
             if len(pop_button) > 0:
                 pop_button[0].click()
                 time.sleep(sleep_time)
-            Select(driver.find_element_by_xpath("//select[@id='limiter']")).select_by_value('100')
+            # Select(driver.find_element_by_xpath("//select[@id='limiter']")).select_by_value('100')
             time.sleep(sleep_time)
             page = True
         except Exception as er:
@@ -248,7 +248,7 @@ def restaurant_depot(products, website_config):
                 if data[sku].get('not_available', False):
                     write_except = socket.execute(db, login, pwd, 'product.sku.reference', 'log_exception_error',
                                                   products[sku][0],
-                                                  "Couldn't fetch price due to Product Temporarily unavailable")
+                                                  "Temporarily unavailable")
                     continue
                 item_name = data[sku].get('name')
                 item_price = data[sku].get('unit_price')
@@ -260,6 +260,7 @@ def restaurant_depot(products, website_config):
                                'item_price': item_price,
                                'update_date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                }
+
                 res = odoo_writeback(create_vals, products[sku][0])
 
                 schedule_to_unlink = socket.execute(db, login, pwd, 'price.fetch.schedule', 'search',
@@ -316,7 +317,9 @@ def webstaurant_store_fetch(driver, item, products, mode):
             logger.info(f"writing info WS sku: {item}  Price: {unit_price}")
             create_vals = {'product_sku_ref_id': product_sku_id, 'item_name': name, 'item_price': unit_price,
                            'update_date': datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+            logger.info(f"create_vals: {create_vals}")
             res = odoo_writeback(create_vals, product_sku_id, write_url=item_url)
+
             return True
     except Exception as er:
         logger.error('Exception occurred', er)
