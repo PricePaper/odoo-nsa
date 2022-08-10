@@ -16,7 +16,6 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.support.ui import Select
 
 # Set up logging
 logger = logging.getLogger()
@@ -89,7 +88,8 @@ def odoo_writeback(create_vals, product_id, write_url=''):
     The common method which is used to
     write values back into the odoo instance
     """
-    socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
+    socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(),
+                                       allow_none=True)
     if write_url:
         write_status = socket.execute(db, login, pwd, 'product.sku.reference', 'write', product_id,
                                       {'website_link': write_url})
@@ -171,12 +171,11 @@ def restaurant_depot_process_page(driver):
                         product['units_in_case'] = li.text.strip('Units per case:').strip() and float(
                             li.text.strip('Units per case:').strip())
 
-
                 product['unit_price'] = unit_price and float(unit_price)
                 product['case_price'] = case_price and float(case_price)
-                product['not_available'] =  False
+                product['not_available'] = False
                 if not unit_price and not case_price:
-                    product['not_available'] =  True
+                    product['not_available'] = True
 
                 scraped_data.append(product)
             except Exception as er:
@@ -289,7 +288,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
             search_box.clear()
             search_box.send_keys(item)
             search_button = driver.find_element_by_xpath(
-                    "//button[@class='bg-origin-box-border bg-repeat-x border-solid border box-border cursor-pointer inline-block text-center no-underline hover:no-underline antialiased hover:bg-position-y-15 rounded-l-none rounded-r-normal box-border text-base-1/2 leading-4 m-0 py-2 px-2 capitalize align-top w-24 z-10 xs:py-3 xs:px-5 xs:w-auto  bg-blue-300 hover:bg-blue-600 text-white text-shadow-black-60 bg-linear-gradient-180-blue border-black-25 shadow-inset-black-17 align-middle font-semibold']")
+                "//button[@class='bg-origin-box-border bg-repeat-x border-solid border box-border cursor-pointer inline-block text-center no-underline hover:no-underline antialiased hover:bg-position-y-15 rounded-l-none rounded-r-normal box-border text-base-1/2 leading-4 m-0 py-2 px-2 capitalize align-top w-24 z-10 xs:py-3 xs:px-5 xs:w-auto  bg-blue-300 hover:bg-blue-600 text-white text-shadow-black-60 bg-linear-gradient-180-blue border-black-25 shadow-inset-black-17 align-middle font-semibold']")
             search_button.click()
 
         if mode == 'url':

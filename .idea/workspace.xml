@@ -5,12 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4d359f74-ea42-48f6-857d-399f117c7d52" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/odoo-nsa.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/odoo-nsa.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/geckodriver" beforeDir="false" afterPath="$PROJECT_DIR$/geckodriver" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web_scraping.py" beforeDir="false" afterPath="$PROJECT_DIR$/web_scraping.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -122,7 +116,7 @@
       <workItem from="1607563979432" duration="73000" />
       <workItem from="1607564084754" duration="2174000" />
       <workItem from="1607569015285" duration="3554000" />
-      <workItem from="1660152420972" duration="1360000" />
+      <workItem from="1660152420972" duration="1918000" />
     </task>
     <task id="LOCAL-00001" summary="Split docker build process to speed up development&#10;Migrated from Ubuntu to Alpine for container&#10;Minor formating improvements">
       <created>1607569515971</created>
