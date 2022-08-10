@@ -73,7 +73,7 @@ except Exception as e:
 
 # Browser Configuration
 options = Options()
-options.headless = True
+# options.headless = True
 
 # Socket Connection Configuration
 
@@ -130,7 +130,7 @@ def restaurant_depot_login(driver, website_config):
 
                 login = True
         except Exception as e:
-            logger.error("Restaurant Depot login in failed. Retrying...")
+            logger.error("Restaurant Depot login in failed. Retrying...", e)
             pass
     return driver
 
