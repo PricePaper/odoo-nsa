@@ -1,2 +1,3 @@
-run_nsa.sh
-docker-compose.yaml
+/docker-compose.yaml
+/run_nsa.sh
+/venv/

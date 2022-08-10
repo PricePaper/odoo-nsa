@@ -45,6 +45,9 @@ def environ_or_required(key):
 
 
 try:
+    parser.add_argument('-a', '--attached', dest='headless', action='store_false', default=True,
+                        help='Run in a browser window (default is headless)')
+
     parser.add_argument('-u', '--url', dest='url', default=os.environ.get("NSA_XMLRPC_URI",
                                                                           'http://localhost:8069'),
                         help="XML-RPC host URL (default http://localhost:8069)")
@@ -67,13 +70,14 @@ try:
     pwd = args.pwd
     db = args.db
     poll_interval = args.poll_interval
+    headless = args.headless
 except Exception as e:
     logger.error(e)
     sys.exit(1)
 
 # Browser Configuration
 options = Options()
-options.headless = True
+options.headless = headless
 
 # Socket Connection Configuration
 
@@ -130,7 +134,7 @@ def restaurant_depot_login(driver, website_config):
 
                 login = True
         except Exception as e:
-            logger.error("Restaurant Depot login in failed. Retrying...")
+            logger.error("Restaurant Depot login in failed. Retrying...", e)
             pass
     return driver
 

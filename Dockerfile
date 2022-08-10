@@ -1,4 +1,4 @@
-FROM alpine:3.14 AS base
+FROM alpine:3.16 AS base
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 # Generate locale 
@@ -6,9 +6,11 @@ ENV LANG en_US.utf8
 
 COPY geckodriver /usr/local/bin
 
-# Install some deps and wkhtmltopdf
+# Install some deps
 RUN set -x; \
         adduser -D -u 29750 scrape \
+        && mkdir /home/scrape/tmp \
+        && chown scrape:scrape /home/scrape/tmp \
         && apk update \
         && apk upgrade \
         && apk add \
@@ -28,13 +30,18 @@ RUN set -x; \
             py3-async_generator \
             py3-wsproto \
             py3-openssl \
-        && pip3 install --no-cache selenium \
+            py3-urllib3 \
+            py3-pysocks \
+            py3-certifi \
+        && pip3 install --no-cache 'selenium<4.3' \
               multiprocessing_logging
 
 FROM base AS final
 # Copy base script
-COPY web_scraping.py /
+COPY web_scraping.py /home/scrape
 
 USER scrape
+WORKDIR /home/scrape
+ENV TMPDIR /home/scrape/tmp
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["/web_scraping.py"]
+CMD ["/home/scrape/web_scraping.py"]
