@@ -185,7 +185,7 @@ def restaurant_depot_process_page(driver):
 def restaurant_depot_scrape(driver):
     data = []
     page = False
-    sleep_time = 20
+    sleep_time = 30
     count = 1
     driver1 = driver
     while not page:
@@ -208,7 +208,7 @@ def restaurant_depot_scrape(driver):
                 logger.error("***Restaurant Depot Page loading failed.***")
                 return data
             logger.error("Restaurant Depot Page loading failed. Retrying...")
-            sleep_time += 10
+            sleep_time += 15
             count += 1
             driver = driver1
 
