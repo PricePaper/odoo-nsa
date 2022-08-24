@@ -240,6 +240,8 @@ def restaurant_depot_scrape(driver):
 
 
 def restaurant_depot(products, website_config):
+
+    socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     driver = webdriver.Firefox(options=options, service_log_path=os.path.devnull)
     driver = restaurant_depot_login(driver, website_config)
     data = restaurant_depot_scrape(driver)
@@ -330,6 +332,8 @@ def webstaurant_store_fetch(driver, item, products, mode):
 
 
 def webstaurant_store(products, website_config):
+
+    socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     driver = webdriver.Firefox(options=options, service_log_path=os.path.devnull)
     item_url = ''
     if 'wdepot' in website_config:
@@ -388,6 +392,8 @@ def webstaurant_store(products, website_config):
 
 
 def check_queued_fetches(login_config):
+
+    socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     logger.info('polling queue')
     queued_fetches = socket.execute(db, login, pwd, 'price.fetch.schedule', 'search_read', [],
                                     ['id', 'product_sku_ref_id'])
@@ -431,6 +437,7 @@ def check_queued_fetches(login_config):
     return list(rdepot_products.keys()), list(wdepot_products.keys())
 
 
+socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
 while True:
     website_config = socket.execute(db, login, pwd, 'website.scraping.cofig', 'search_read', [],
                                     ['id', 'home_page_url', 'username', 'password', 'competitor'])
