@@ -167,9 +167,6 @@ def restaurant_depot_process_page(driver):
                         product['item'] = li.text.strip('Item:').strip()
                     elif index == 2:
                         product['upc'] = li.text.strip('UPC:').strip()
-                    elif index == 3:
-                        product['units_in_case'] = li.text.strip('Units per case:').strip() and float(
-                            li.text.strip('Units per case:').strip())
 
                 product['unit_price'] = unit_price and float(unit_price)
                 product['case_price'] = case_price and float(case_price)
