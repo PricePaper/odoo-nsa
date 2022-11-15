@@ -88,6 +88,8 @@ def restaurant_depot():
         old_upc = ''
         for vals in csv_reader:
             upc = vals['UPC']
+            if vals.get('Unit/Case') == 'Total:':
+                break
             if not upc:
                 if vals['Est.Price'] == 'N/A':
                     product_list[upc] = {'not_available': True}

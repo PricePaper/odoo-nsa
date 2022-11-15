@@ -1,6 +1,6 @@
 import json
 
-with open("scripts.conf", "r") as f:
+with open("script.conf", "r") as f:
     config = json.load(f)
 
 URL = config['url']
