@@ -396,16 +396,18 @@ def check_queued_fetches(login_config):
                                     ['id', 'product_sku_ref_id'])
     queued_fetches_ids = [ele['id'] for ele in queued_fetches]
     queued_fetches = [ele['product_sku_ref_id'][0] for ele in queued_fetches]
-    rdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
-                                 [('id', 'in', queued_fetches), ('competitor', '=', 'rdepot'),
-                                  ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
+    # rdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
+    #                              [('id', 'in', queued_fetches), ('competitor', '=', 'rdepot'),
+    #                               ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
     wdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
                                  [('id', 'in', queued_fetches), ('competitor', '=', 'wdepot'),
                                   ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
-    rdepot_products = {sku['competitor_sku']: (sku['id'], sku['qty_in_uom'], sku['website_link']) for sku in
-                       rdepot_skus}
+    rdepot_products = {}
+    # rdepot_products = {sku['competitor_sku']: (sku['id'], sku['qty_in_uom'], sku['website_link']) for sku in
+    #                    rdepot_skus}
     wdepot_products = {sku['competitor_sku']: (sku['id'], sku['qty_in_uom'], sku['website_link']) for sku in
                        wdepot_skus}
+
 
     # Start Webstaurant Scraping if we have products in the queue
     logger.info('***Webstaurant Scraping***')
@@ -417,20 +419,20 @@ def check_queued_fetches(login_config):
     else:
         logger.info('No Webstaurant product in the queue')
 
-    logger.info('***Restaurant Depot Scraping***')
-    restaurant_depot_worker = None
-    if rdepot_products:
-        restaurant_depot_worker = mp.Process(name="Restaurant_Depot", target=restaurant_depot,
-                                             args=(rdepot_products, login_config))
-        restaurant_depot_worker.start()
-    else:
-        logger.info('No Restaurant Depot product in the queue')
+    # logger.info('***Restaurant Depot Scraping***')
+    # restaurant_depot_worker = None
+    # if rdepot_products:
+    #     restaurant_depot_worker = mp.Process(name="Restaurant_Depot", target=restaurant_depot,
+    #                                          args=(rdepot_products, login_config))
+    #     restaurant_depot_worker.start()
+    # else:
+    #     logger.info('No Restaurant Depot product in the queue')
 
     # Wait for workers to finish their jobs
     if webstaurant_worker:
         webstaurant_worker.join()
-    if restaurant_depot_worker:
-        restaurant_depot_worker.join()
+    # if restaurant_depot_worker:
+    #     restaurant_depot_worker.join()
     return list(rdepot_products.keys()), list(wdepot_products.keys())
 
 
