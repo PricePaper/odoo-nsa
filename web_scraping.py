@@ -10,12 +10,14 @@ import time
 import xmlrpc.client
 from argparse import Namespace
 from datetime import datetime
+import csv
 
 import multiprocessing_logging
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 
 # Set up logging
 logger = logging.getLogger()
@@ -139,56 +141,55 @@ def restaurant_depot_login(driver, website_config):
     return driver
 
 
-def restaurant_depot_process_page(driver):
-    scraped_data = []
-    soup_string = BeautifulSoup(driver.page_source, 'lxml')
-
-    try:
-        for ele in soup_string.findAll('div', {'id': 'items-list'})[0].findAll('ol', {
-            'class': 'products list items product-items'})[0].findAll('li', {'class': 'item product product-item'}):
-            try:
-                event_title = ele.find(class_='col-md-12 data-col').findAll('li')
-                unit_price = ele.find('span', {'class': 'select-price'}) or False
-                case_price = ''
-                if unit_price:
-                    unit_price = unit_price.text.strip().strip('$')
-                else:
-                    unit_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {
-                        'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {
-                        'value': '1'}).text.strip().strip('Unit').strip().strip('$')
-                    case_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {
-                        'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {
-                        'value': '2'}).text.strip().strip('Case').strip().strip('$')
-                product = {}
-                for index, li in enumerate(event_title):
-                    if index == 0:
-                        product['name'] = li.text.strip()
-                    elif index == 1:
-                        product['item'] = li.text.strip('Item:').strip()
-                    elif index == 2:
-                        product['upc'] = li.text.strip('UPC:').strip()
-
-                product['unit_price'] = unit_price and float(unit_price)
-                product['case_price'] = case_price and float(case_price)
-                product['not_available'] = False
-                if not unit_price and not case_price:
-                    product['not_available'] = True
-
-                scraped_data.append(product)
-            except Exception as er:
-                logger.error('Exception occurred', er)
-    except Exception as er:
-        logger.error('Exception occurred', er)
-    return scraped_data
+# def restaurant_depot_process_page(driver):
+#     scraped_data = []
+#     soup_string = BeautifulSoup(driver.page_source, 'lxml')
+#
+#     try:
+#         for ele in soup_string.findAll('div', {'id': 'items-list'})[0].findAll('ol', {
+#             'class': 'products list items product-items'})[0].findAll('li', {'class': 'item product product-item'}):
+#             try:
+#                 event_title = ele.find(class_='col-md-12 data-col').findAll('li')
+#                 unit_price = ele.find('span', {'class': 'select-price'}) or False
+#                 case_price = ''
+#                 if unit_price:
+#                     unit_price = unit_price.text.strip().strip('$')
+#                 else:
+#                     unit_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {
+#                         'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {
+#                         'value': '1'}).text.strip().strip('Unit').strip().strip('$')
+#                     case_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {
+#                         'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {
+#                         'value': '2'}).text.strip().strip('Case').strip().strip('$')
+#                 product = {}
+#                 for index, li in enumerate(event_title):
+#                     if index == 0:
+#                         product['name'] = li.text.strip()
+#                     elif index == 1:
+#                         product['item'] = li.text.strip('Item:').strip()
+#                     elif index == 2:
+#                         product['upc'] = li.text.strip('UPC:').strip()
+#
+#                 product['unit_price'] = unit_price and float(unit_price)
+#                 product['case_price'] = case_price and float(case_price)
+#                 product['not_available'] = False
+#                 if not unit_price and not case_price:
+#                     product['not_available'] = True
+#
+#                 scraped_data.append(product)
+#             except Exception as er:
+#                 logger.error('Exception occurred', er)
+#     except Exception as er:
+#         logger.error('Exception occurred', er)
+#     return scraped_data
 
 
 def restaurant_depot_scrape(driver):
-    data = []
-    page = False
-    sleep_time = 30
+    data = {}
+    sleep_time = 40
     count = 1
     driver1 = driver
-    while not page:
+    while True:
         try:
             my_list = driver.find_element_by_xpath("//button[@class='action action-auth-toggle user-shopping-list']")
             my_list.click()
@@ -196,13 +197,13 @@ def restaurant_depot_scrape(driver):
                 "//div[@id='header-list-item-count']/div/ol[1]/li[1]/a")  # use li[1] for first list
             link.click()
             time.sleep(sleep_time)
-            pop_button = driver.find_elements_by_xpath("//button[@class='action-primary action-accept']")
-            if len(pop_button) > 0:
-                pop_button[0].click()
-                time.sleep(sleep_time)
-            # Select(driver.find_element_by_xpath("//select[@id='limiter']")).select_by_value('100')
-            time.sleep(sleep_time)
-            page = True
+            # pop_button = driver.find_elements_by_xpath("//button[@class='action-primary action-accept']")
+            # if len(pop_button) > 0:
+            #     pop_button[0].click()
+            #     time.sleep(sleep_time)
+            break
+
+
         except Exception as er:
             if count == 3:
                 logger.error("***Restaurant Depot Page loading failed.***")
@@ -212,26 +213,62 @@ def restaurant_depot_scrape(driver):
             count += 1
             driver = driver1
 
+    sleep_time = 40
+    count = 1
+    driver1 = driver
     while True:
         try:
-            data += restaurant_depot_process_page(driver)
-        except Exception as er:
-            logger.error('One page Skipped\n Error:', er)
-        try:
-            end_page = driver.find_element_by_xpath(
-                "//div[@class='item pages-item-next inactive']")
-        except NoSuchElementException:
-            end_page = False
-        if end_page:
+            print_button = driver.find_elements_by_xpath("//button[@id='print-export-list']")
+            if len(print_button) > 0:
+                print_button[0].click()
+                time.sleep(sleep_time)
+
+            if os.path.isfile("/home/pauljose/Downloads/Allitems.csv"):
+                os.remove("/home/pauljose/Downloads/Allitems.csv")
+
+            export_button = driver.find_elements_by_xpath("//button[@id='export-to-excel']")
+
+            if len(export_button) > 0:
+                export_button[0].click()
+                time.sleep(30)
             break
-        else:
-            try:
-                driver.find_element_by_xpath(
-                    "//div[@class='item pages-item-next ']/a[@class='action  next']").click()
-                time.sleep(20)
-            except NoSuchElementException:
-                logger.error('Element not Found')
-                break
+        except Exception as er:
+            if count == 3:
+                logger.error("***Restaurant Depot export failed.***")
+                return data
+            logger.error("Restaurant Depot export failed. Retrying...")
+            sleep_time += 15
+            count += 1
+            driver = driver1
+
+    if os.path.isfile("/home/pauljose/Downloads/Allitems.csv"):
+        with open('/home/pauljose/Downloads/Allitems.csv', newline='') as f:
+            count = 1
+            old_upc = ''
+            for row in csv.reader(f):
+                if count > 9:
+                    if row[5] == 'Total:':
+                        break
+
+                    if row[7] == 'N/A':
+                        upc = row[0] and row[0] or old_upc
+                        data[upc] = {'not_available': True}
+                        continue
+
+                    qty = float(row[6])
+                    price = float(row[7].strip('$').replace(',', ''))
+                    unit_price = price
+                    if qty > 0:
+                        unit_price = price/qty
+
+                    if not row[0]:
+                        data[old_upc]['case_price'] = unit_price
+                    else:
+                        data[row[0]] = {'name': row[2], 'unit_price': unit_price, 'not_available': False}
+                        old_upc = row[0]
+                count+=1
+
+
     driver.quit()
     return data
 
@@ -240,9 +277,13 @@ def restaurant_depot(products, website_config):
 
     socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     driver = webdriver.Firefox(options=options, service_log_path=os.path.devnull)
+
+    # s = Service('/home/pauljose/projects/odoo-nsa/geckodriver')
+    # driver = webdriver.Firefox(service=s)
+
     driver = restaurant_depot_login(driver, website_config)
     data = restaurant_depot_scrape(driver)
-    data = {elm.get('upc'): {e: elm[e] for e in list(elm.keys()) if e != 'upc'} for elm in data}
+    # data = {elm.get('upc'): {e: elm[e] for e in list(elm.keys()) if e != 'upc'} for elm in data}
 
     if 'rdepot' in website_config:
         for sku in list(products.keys()):
@@ -396,15 +437,15 @@ def check_queued_fetches(login_config):
                                     ['id', 'product_sku_ref_id'])
     queued_fetches_ids = [ele['id'] for ele in queued_fetches]
     queued_fetches = [ele['product_sku_ref_id'][0] for ele in queued_fetches]
-    # rdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
-    #                              [('id', 'in', queued_fetches), ('competitor', '=', 'rdepot'),
-    #                               ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
+    rdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
+                                 [('id', 'in', queued_fetches), ('competitor', '=', 'rdepot'),
+                                  ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
     wdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
                                  [('id', 'in', queued_fetches), ('competitor', '=', 'wdepot'),
                                   ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
     rdepot_products = {}
-    # rdepot_products = {sku['competitor_sku']: (sku['id'], sku['qty_in_uom'], sku['website_link']) for sku in
-    #                    rdepot_skus}
+    rdepot_products = {sku['competitor_sku']: (sku['id'], sku['qty_in_uom'], sku['website_link']) for sku in
+                       rdepot_skus}
     wdepot_products = {sku['competitor_sku']: (sku['id'], sku['qty_in_uom'], sku['website_link']) for sku in
                        wdepot_skus}
 
@@ -420,19 +461,20 @@ def check_queued_fetches(login_config):
         logger.info('No Webstaurant product in the queue')
 
     # logger.info('***Restaurant Depot Scraping***')
-    # restaurant_depot_worker = None
-    # if rdepot_products:
-    #     restaurant_depot_worker = mp.Process(name="Restaurant_Depot", target=restaurant_depot,
-    #                                          args=(rdepot_products, login_config))
-    #     restaurant_depot_worker.start()
-    # else:
-    #     logger.info('No Restaurant Depot product in the queue')
+
+    restaurant_depot_worker = None
+    if rdepot_products:
+        restaurant_depot_worker = mp.Process(name="Restaurant_Depot", target=restaurant_depot,
+                                             args=(rdepot_products, login_config))
+        restaurant_depot_worker.start()
+    else:
+        logger.info('No Restaurant Depot product in the queue')
 
     # Wait for workers to finish their jobs
     if webstaurant_worker:
         webstaurant_worker.join()
-    # if restaurant_depot_worker:
-    #     restaurant_depot_worker.join()
+    if restaurant_depot_worker:
+        restaurant_depot_worker.join()
     return list(rdepot_products.keys()), list(wdepot_products.keys())
 
 
