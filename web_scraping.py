@@ -251,7 +251,12 @@ def restaurant_depot_scrape(driver):
                         break
 
                     if row[7] == 'N/A':
-                        upc = row[0] and row[0] or old_upc
+                        upc = ''
+                        if row[0]:
+                            upc = row[0]
+                            old_upc = row[0]
+                        else:
+                            upc = old_upc
                         data[upc] = {'not_available': True}
                         continue
 
