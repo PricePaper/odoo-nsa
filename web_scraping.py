@@ -221,11 +221,10 @@ def restaurant_depot_scrape(driver):
             print_button = driver.find_elements_by_xpath("//button[@id='print-export-list']")
             if len(print_button) > 0:
                 print_button[0].click()
-                time.sleep(sleep_time)
+                time.sleep(50)
 
             if os.path.isfile("/home/pauljose/Downloads/Allitems.csv"):
                 os.remove("/home/pauljose/Downloads/Allitems.csv")
-
             export_button = driver.find_elements_by_xpath("//button[@id='export-to-excel']")
 
             if len(export_button) > 0:
@@ -246,7 +245,7 @@ def restaurant_depot_scrape(driver):
             count = 1
             old_upc = ''
             for row in csv.reader(f):
-                if count > 9:
+                if count > 10:
                     if row[5] == 'Total:':
                         break
 
