@@ -332,7 +332,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
             search_box.clear()
             search_box.send_keys(item)
             search_button = driver.find_element_by_xpath(
-                "//button[@class='bg-origin-box-border bg-repeat-x border-solid border box-border cursor-pointer inline-block text-center no-underline hover:no-underline antialiased hover:bg-position-y-15 rounded-l-none rounded-r-normal box-border text-base-1/2 leading-4 m-0 py-2 px-2 capitalize align-top w-24 z-10 xs:py-3 xs:px-5 xs:w-auto  bg-blue-300 hover:bg-blue-600 text-white text-shadow-black-60 bg-linear-gradient-180-blue border-black-25 shadow-inset-black-17 align-middle font-semibold']")
+                "//button[@class='text-white hidden rounded-r border-0 box-border text-sm py-2.5 px-5 lt:flex lt:items-center cursor-pointer bg-[#1676CD] lt:hover:bg-[#2B6CB0] tracking-[.02em]']")
             search_button.click()
 
         if mode == 'url':
@@ -369,6 +369,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
 
             return True
     except Exception as er:
+        logger.error('----------------------Competitor SKU -------------------:', item)
         logger.error('Exception occurred', er)
     return False
 
@@ -377,6 +378,9 @@ def webstaurant_store(products, website_config):
 
     socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     driver = webdriver.Firefox(options=options, service_log_path=os.path.devnull)
+
+    # s = Service('/home/pauljose/projects/odoo-nsa/geckodriver')
+    # driver = webdriver.Firefox(service=s)
     item_url = ''
     if 'wdepot' in website_config:
         login_url = website_config['wdepot'][0]
@@ -437,13 +441,14 @@ def check_queued_fetches(login_config):
 
     socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     logger.info('polling queue')
-    queued_fetches = socket.execute(db, login, pwd, 'price.fetch.schedule', 'search_read', [],
+    queued_fetches = socket.execute(db, login, pwd, 'price.fetch.schedule', 'search_read', [('in_exception', '=', False)],
                                     ['id', 'product_sku_ref_id'])
     queued_fetches_ids = [ele['id'] for ele in queued_fetches]
     queued_fetches = [ele['product_sku_ref_id'][0] for ele in queued_fetches]
     rdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
                                  [('id', 'in', queued_fetches), ('competitor', '=', 'rdepot'),
                                   ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
+
     wdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
                                  [('id', 'in', queued_fetches), ('competitor', '=', 'wdepot'),
                                   ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
