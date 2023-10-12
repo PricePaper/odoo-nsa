@@ -242,6 +242,7 @@ def restaurant_depot_scrape(driver):
 
             if os.path.isfile(download_directory + "/Allitems.csv"):
                 os.remove(download_directory + "/Allitems.csv")
+
             export_button = driver.find_elements_by_xpath("//button[@id='export-to-excel']")
 
             if len(export_button) > 0:
