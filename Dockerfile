@@ -9,8 +9,8 @@ COPY geckodriver /usr/local/bin
 # Install some deps
 RUN set -x; \
         adduser -D -u 29750 scrape \
-        && mkdir /home/scrape/tmp \
-        && chown scrape:scrape /home/scrape/tmp \
+        && mkdir /home/scrape/tmp /home/scrape/Downloads \
+        && chown scrape:scrape /home/scrape/tmp /home/scrape/Downloads \
         && apk update \
         && apk upgrade \
         && apk add \

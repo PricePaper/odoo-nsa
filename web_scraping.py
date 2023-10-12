@@ -64,6 +64,19 @@ try:
     parser.add_argument('-i', '--interval', dest="poll_interval", default=os.environ.get("NSA_POLL_INTERVAL",
                                                                                          120),
                         type=int, help='interval to poll for work (default 120 sec)')
+    parser.add_argument('-o', '--download-dir', dest="download_directory", default=os.environ.get("NSA_DOWNLOAD_DIR",
+                                        os.environ.get("HOME") + "/Downloads"),
+                                help="Download directory for browser. Default is $HOME/Downloads")
+    parser.add_argument('-s', '--depot-sleep-time', dest="depot_sleep_time", type=int, default=75,
+                                help="how long should we wait for Depot pages to load in seconds. Default 75.")
+
+    env_depot_sleep_time: int = 0
+    try:
+        env_depot_sleep_time = int(os.environ.get("NSA_DEPOT_SLEEP_TIME", 0))
+    except ValueError as e:
+        logger.error("Environmental variable NSA_DEPOT_SLEEP_TIME is not an integer. Exiting.")
+        logger.debug(e)
+        sys.exit(1)
 
     args = parser.parse_args()  # type: Namespace
     url = args.url
@@ -72,6 +85,10 @@ try:
     db = args.db
     poll_interval = args.poll_interval
     headless = args.headless
+    download_directory = args.download_directory
+    depot_sleep_time = env_depot_sleep_time or args.depot_sleep_time
+
+
 except Exception as e:
     logger.error(e)
     sys.exit(1)
@@ -213,7 +230,7 @@ def restaurant_depot_scrape(driver):
             count += 1
             driver = driver1
 
-    sleep_time = 40
+    sleep_time = depot_sleep_time
     count = 1
     driver1 = driver
     while True:
@@ -221,16 +238,15 @@ def restaurant_depot_scrape(driver):
             print_button = driver.find_elements_by_xpath("//button[@id='print-export-list']")
             if len(print_button) > 0:
                 print_button[0].click()
-                time.sleep(sleep_time)
+                time.sleep(depot_sleep_time)
 
-            if os.path.isfile("/home/pauljose/Downloads/Allitems.csv"):
-                os.remove("/home/pauljose/Downloads/Allitems.csv")
-
+            if os.path.isfile(download_directory + "/Allitems.csv"):
+                os.remove(download_directory + "/Allitems.csv")
             export_button = driver.find_elements_by_xpath("//button[@id='export-to-excel']")
 
             if len(export_button) > 0:
                 export_button[0].click()
-                time.sleep(30)
+                time.sleep(depot_sleep_time)
             break
         except Exception as er:
             if count == 3:
@@ -241,12 +257,12 @@ def restaurant_depot_scrape(driver):
             count += 1
             driver = driver1
 
-    if os.path.isfile("/home/pauljose/Downloads/Allitems.csv"):
-        with open('/home/pauljose/Downloads/Allitems.csv', newline='') as f:
+    if os.path.isfile(download_directory + "/Allitems.csv"):
+        with open(download_directory + "/Allitems.csv", newline='') as f:
             count = 1
             old_upc = ''
             for row in csv.reader(f):
-                if count > 9:
+                if count > 10:
                     if row[5] == 'Total:':
                         break
 
@@ -333,7 +349,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
             search_box.clear()
             search_box.send_keys(item)
             search_button = driver.find_element_by_xpath(
-                "//button[@class='bg-origin-box-border bg-repeat-x border-solid border box-border cursor-pointer inline-block text-center no-underline hover:no-underline antialiased hover:bg-position-y-15 rounded-l-none rounded-r-normal box-border text-base-1/2 leading-4 m-0 py-2 px-2 capitalize align-top w-24 z-10 xs:py-3 xs:px-5 xs:w-auto  bg-blue-300 hover:bg-blue-600 text-white text-shadow-black-60 bg-linear-gradient-180-blue border-black-25 shadow-inset-black-17 align-middle font-semibold']")
+                "//button[@class='text-white hidden rounded-r border-0 box-border text-sm py-2.5 px-5 lt:flex lt:items-center cursor-pointer bg-[#1676CD] lt:hover:bg-[#2B6CB0] tracking-[.02em]']")
             search_button.click()
 
         if mode == 'url':
@@ -370,6 +386,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
 
             return True
     except Exception as er:
+        logger.error('----------------------Competitor SKU -------------------:', item)
         logger.error('Exception occurred', er)
     return False
 
@@ -378,6 +395,9 @@ def webstaurant_store(products, website_config):
 
     socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     driver = webdriver.Firefox(options=options, service_log_path=os.path.devnull)
+
+    # s = Service('/home/pauljose/projects/odoo-nsa/geckodriver')
+    # driver = webdriver.Firefox(service=s)
     item_url = ''
     if 'wdepot' in website_config:
         login_url = website_config['wdepot'][0]
@@ -438,13 +458,14 @@ def check_queued_fetches(login_config):
 
     socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     logger.info('polling queue')
-    queued_fetches = socket.execute(db, login, pwd, 'price.fetch.schedule', 'search_read', [],
+    queued_fetches = socket.execute(db, login, pwd, 'price.fetch.schedule', 'search_read', [('in_exception', '=', False)],
                                     ['id', 'product_sku_ref_id'])
     queued_fetches_ids = [ele['id'] for ele in queued_fetches]
     queued_fetches = [ele['product_sku_ref_id'][0] for ele in queued_fetches]
     rdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
                                  [('id', 'in', queued_fetches), ('competitor', '=', 'rdepot'),
                                   ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
+
     wdepot_skus = socket.execute(db, login, pwd, 'product.sku.reference', 'search_read',
                                  [('id', 'in', queued_fetches), ('competitor', '=', 'wdepot'),
                                   ('in_exception', '=', False)], ['id', 'competitor_sku', 'website_link', 'qty_in_uom'])
