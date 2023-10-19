@@ -18,6 +18,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.common.by import By
 
 # Set up logging
 logger = logging.getLogger()
@@ -157,50 +158,6 @@ def restaurant_depot_login(driver, website_config):
             pass
     return driver
 
-
-# def restaurant_depot_process_page(driver):
-#     scraped_data = []
-#     soup_string = BeautifulSoup(driver.page_source, 'lxml')
-#
-#     try:
-#         for ele in soup_string.findAll('div', {'id': 'items-list'})[0].findAll('ol', {
-#             'class': 'products list items product-items'})[0].findAll('li', {'class': 'item product product-item'}):
-#             try:
-#                 event_title = ele.find(class_='col-md-12 data-col').findAll('li')
-#                 unit_price = ele.find('span', {'class': 'select-price'}) or False
-#                 case_price = ''
-#                 if unit_price:
-#                     unit_price = unit_price.text.strip().strip('$')
-#                 else:
-#                     unit_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {
-#                         'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {
-#                         'value': '1'}).text.strip().strip('Unit').strip().strip('$')
-#                     case_price = ele.find('div', {'class': 'select-div-box'}) and ele.find('div', {
-#                         'class': 'select-div-box'}).find('select', {'class': 'product-package-select'}).find('option', {
-#                         'value': '2'}).text.strip().strip('Case').strip().strip('$')
-#                 product = {}
-#                 for index, li in enumerate(event_title):
-#                     if index == 0:
-#                         product['name'] = li.text.strip()
-#                     elif index == 1:
-#                         product['item'] = li.text.strip('Item:').strip()
-#                     elif index == 2:
-#                         product['upc'] = li.text.strip('UPC:').strip()
-#
-#                 product['unit_price'] = unit_price and float(unit_price)
-#                 product['case_price'] = case_price and float(case_price)
-#                 product['not_available'] = False
-#                 if not unit_price and not case_price:
-#                     product['not_available'] = True
-#
-#                 scraped_data.append(product)
-#             except Exception as er:
-#                 logger.error('Exception occurred', er)
-#     except Exception as er:
-#         logger.error('Exception occurred', er)
-#     return scraped_data
-
-
 def restaurant_depot_scrape(driver):
     data = {}
     sleep_time = 40
@@ -208,16 +165,15 @@ def restaurant_depot_scrape(driver):
     driver1 = driver
     while True:
         try:
+            pop_button = driver.find_elements_by_xpath("//button[@class='action-secondary action-dismiss']")
+            if len(pop_button) > 0:
+                pop_button[0].click()
             my_list = driver.find_element_by_xpath("//button[@class='action action-auth-toggle user-shopping-list']")
             my_list.click()
             link = driver.find_element_by_xpath(
                 "//div[@id='header-list-item-count']/div/ol[1]/li[1]/a")  # use li[1] for first list
             link.click()
             time.sleep(sleep_time)
-            # pop_button = driver.find_elements_by_xpath("//button[@class='action-primary action-accept']")
-            # if len(pop_button) > 0:
-            #     pop_button[0].click()
-            #     time.sleep(sleep_time)
             break
 
 
