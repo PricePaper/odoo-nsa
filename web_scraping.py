@@ -160,11 +160,12 @@ def restaurant_depot_login(driver, website_config):
 
 def restaurant_depot_scrape(driver):
     data = {}
-    sleep_time = 40
+    sleep_time = depot_sleep_time
     count = 1
     driver1 = driver
     while True:
         try:
+            time.sleep(sleep_time)
             pop_button = driver.find_elements_by_xpath("//button[@class='action-secondary action-dismiss']")
             if len(pop_button) > 0:
                 pop_button[0].click()
@@ -186,7 +187,6 @@ def restaurant_depot_scrape(driver):
             count += 1
             driver = driver1
 
-    sleep_time = depot_sleep_time
     count = 1
     driver1 = driver
     while True:
