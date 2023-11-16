@@ -326,7 +326,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
         for tr in price_tr:
             if tr.find('td'):
                 price.append(
-                    float(tr.find('td').get_text().replace('\n', '').replace('\t', '').replace('$', '').split('/')[0]))
+                    float(tr.find('td').get_text().replace('\n', '').replace('\t', '').split('$')[-1].split('/')[0]))
         if price:
             unit_price = max(price)
         else:
