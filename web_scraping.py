@@ -253,6 +253,7 @@ def restaurant_depot_scrape(driver):
 
 def restaurant_depot(products, website_config):
 
+
     socket = xmlrpc.client.ServerProxy(url + '/xmlrpc/object', context=ssl._create_unverified_context(), allow_none=True)
     driver = webdriver.Firefox(options=options, service_log_path=os.path.devnull)
 
@@ -306,7 +307,7 @@ def webstaurant_store_fetch(driver, item, products, mode):
             search_box.clear()
             search_box.send_keys(item)
             search_button = driver.find_element_by_xpath(
-                "//button[@class='text-white hidden rounded-r border-0 box-border text-sm py-2.5 px-5 lt:flex lt:items-center cursor-pointer bg-[#1676CD] lt:hover:bg-[#2B6CB0] tracking-[.02em]']")
+                "//button[@class='text-white hidden rounded-r border-0 box-border text-sm py-2.5 px-4-1/2 lt:flex lt:items-center cursor-pointer bg-blue-700 lt:hover:bg-blue-800 tracking-[.02em]']")
             search_button.click()
 
         if mode == 'url':
